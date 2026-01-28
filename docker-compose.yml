@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: transfers-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-transfers}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-transfers}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - transfers-network
+    restart: unless-stopped
+
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: transfers-db-test
+    profiles:
+      - test
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: transfers_test
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d transfers_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - transfers-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transfers-api
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_READ_TIMEOUT=${SERVER_READ_TIMEOUT:-15s}
+      - SERVER_WRITE_TIMEOUT=${SERVER_WRITE_TIMEOUT:-15s}
+      - SERVER_IDLE_TIMEOUT=${SERVER_IDLE_TIMEOUT:-60s}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-transfers}
+      - DB_SSL_MODE=${DB_SSL_MODE:-disable}
+      - DB_MAX_CONNS=${DB_MAX_CONNS:-10}
+      - DB_TIMEOUT=${DB_TIMEOUT:-5s}
+      - DB_MIGRATIONS_PATH=migrations
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transfers-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+networks:
+  transfers-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
