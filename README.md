@@ -20,7 +20,7 @@ A Go-based internal transfers service that handles financial transactions betwee
 
 ```bash
 # Clone and start services
-git clone <repository-url>
+git clone git@github.com:pankajvermacr7/Internal-transfers-System.git
 cd Internal-transfers-System
 make start
 
