@@ -10,6 +10,14 @@ A Go-based internal transfers service that handles financial transactions betwee
 - Retry logic for transient database errors
 - Decimal precision for monetary calculations
 
+## Built With
+
+This project uses [go-kit](https://github.com/pankajvermacr7/go-kit) - a reusable Go toolkit that provides:
+
+- **Structured Logging** - Pre-configured zerolog setup with consistent formatting
+- **Database Management** - PostgreSQL connection pooling via pgx with automatic migrations
+- **Configuration** - Environment-based configuration helpers
+
 ## Prerequisites
 
 - Go 1.24+
@@ -98,6 +106,12 @@ Transient database errors (deadlocks, serialization failures) trigger automatic 
 
 ### Decimal Precision
 Uses `shopspring/decimal` for precise monetary calculations instead of floating-point.
+
+### go-kit Integration
+Leverages [go-kit](https://github.com/pankajvermacr7/go-kit) for common infrastructure concerns:
+- `logging.InitLogger()` - Initializes structured logging with zerolog
+- `pgx.NewDB()` - Creates a connection pool with health checks and proper configuration
+- `db.RunMigrationsFromDir()` - Applies SQL migrations automatically on startup
 
 ### Database Constraints
 Business rules enforced at database level:
