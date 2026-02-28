@@ -138,3 +138,6 @@ Business rules enforced at database level:
 | `make test` | Run unit tests |
 | `make test-integration` | Run integration tests |
 | `make test-coverage` | Generate coverage report |
+
+
+<!-- dummy PR test: no functional changes -->
